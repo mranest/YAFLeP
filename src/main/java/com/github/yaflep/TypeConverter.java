@@ -1,8 +1,10 @@
 package com.github.yaflep;
 
+import com.github.yaflep.annotation.DataField;
+
 public interface TypeConverter {
 
-    <T> T convertTo(Class<T> type, Object value)
+    <T> T convertTo(Class<T> type, Object value, DataField dataField)
     throws UnsupportedConversionException;
 	
     public class UnsupportedConversionException extends Exception {

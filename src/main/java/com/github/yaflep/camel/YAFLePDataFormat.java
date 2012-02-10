@@ -13,7 +13,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.NoTypeConversionAvailableException;
 import org.apache.camel.spi.DataFormat;
 
-import com.github.yaflep.TypeConverter;
+import com.github.yaflep.DefaultTypeConverter;
 import com.github.yaflep.YAFLeP;
 
 public class YAFLePDataFormat implements DataFormat {
@@ -58,17 +58,17 @@ public class YAFLePDataFormat implements DataFormat {
 			Object newResponse = null;
 			for (YAFLeP<?> each: yafleps) {
 				if (each.matches(line)) {
-					newResponse = each.unmarshall(line, new TypeConverter() {
-						@Override
-						public <T> T convertTo(Class<T> type, Object value)
-						throws UnsupportedConversionException {
-							try {
-								return exchange.getContext().getTypeConverter().mandatoryConvertTo(type, value);
-							} catch (NoTypeConversionAvailableException e) {
-								throw new UnsupportedConversionException(e);
-							}
+					newResponse = each.unmarshall(line, new DefaultTypeConverter() {
+					@Override
+					protected <T> T convertTo(Class<T> type, Object value)
+					throws UnsupportedConversionException {
+						try {
+							return exchange.getContext().getTypeConverter().mandatoryConvertTo(type, value);
+						} catch (NoTypeConversionAvailableException e) {
+							throw new UnsupportedConversionException(e);
 						}
-					});
+					}
+				});
 				}
 			}
 			

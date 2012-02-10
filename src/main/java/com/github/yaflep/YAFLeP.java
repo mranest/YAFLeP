@@ -44,8 +44,6 @@ public class YAFLeP<T> {
 			DataField df = each.getAnnotation(DataField.class);
 			if (df != null) {
 				dataFieldMap.put(df, each);
-				
-				LOGGER.info("DataField added for {}", clazz.getName());
 			}
 		}
 	}
@@ -64,13 +62,17 @@ public class YAFLeP<T> {
 			int length = each.getKey().length();
 			
 			String valueAsString = line.substring(pos-1, pos+length-1);
-			if (each.getKey().trim()) {
+			if (each.getKey().trimToNull()) {
 				valueAsString = valueAsString.trim();
+				if (valueAsString.length() == 0) {
+					valueAsString = null;
+				}
 			}
 			
 			each.getValue().set(t, typeConverter.convertTo(
 					each.getValue().getType(), 
-					valueAsString));
+					valueAsString,
+					each.getKey()));
 		}
 		
 		return t;

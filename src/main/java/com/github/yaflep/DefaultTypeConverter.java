@@ -1,6 +1,8 @@
 package com.github.yaflep;
 
-import java.math.BigDecimal;
+import org.apache.commons.beanutils.ConvertUtils;
+
+import com.github.yaflep.annotation.DataField;
 
 /**
  * TODO Depend on PropertyEditor infrastructure
@@ -9,22 +11,25 @@ import java.math.BigDecimal;
 public class DefaultTypeConverter implements TypeConverter {
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T convertTo(Class<T> type, Object value) 
+	public <T> T convertTo(Class<T> type, Object value, DataField dataField) 
 	throws UnsupportedConversionException {
-		if (! (value instanceof String)) {
+		if (value == null) {
+			return null;
+		}
+		
+		T t = convertTo(type, value);
+		
+		if (t == null) {		
 			throw new UnsupportedConversionException();
 		}
 		
-		if (type.equals(String.class)) {
-			return (T) value;
-		} else if (type.isAssignableFrom(Integer.class)) {
-			return (T) Integer.valueOf((String) value);
-		} else if(type.equals(BigDecimal.class)) {
-			return (T) new BigDecimal((String) value);
-		}
-		
-		throw new UnsupportedConversionException();
+		return t;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <T> T convertTo(Class<T> type, Object value) 
+	throws UnsupportedConversionException {
+		return (T) ConvertUtils.convert(value, type);
 	}
 	
 }

@@ -8,8 +8,7 @@ public @interface DataField {
 	int pos();
 	int length();
 	char paddingChar() default ' ';
-	boolean trim() default false;
-	/* TODO Revert to matching by fixed fields if multiple FixedLengthRecord exists
-	 * for a pre-determined length */
+	boolean trimToNull() default false;
 	boolean fixed() default false;
+	int decimalPoints() default 0;
 }
