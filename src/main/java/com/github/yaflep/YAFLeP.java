@@ -14,7 +14,7 @@ import com.github.yaflep.annotation.FixedLengthRecord;
 
 public class YAFLeP<T> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(YAFLePTest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(YAFLeP.class);
 	
 	private static final TypeConverter DEFAULT_TYPE_CONVERTER = new DefaultTypeConverter();
 	
