@@ -58,7 +58,7 @@ public class YAFLePDataFormat implements DataFormat {
 			Object newResponse = null;
 			for (YAFLeP<?> each: yafleps) {
 				if (each.matches(line)) {
-					newResponse = each.unmarshall(line, new DefaultTypeConverter() {
+					newResponse = each.unmarshal(line, new DefaultTypeConverter() {
 					@Override
 					protected <T> T convertTo(Class<T> type, Object value)
 					throws UnsupportedConversionException {

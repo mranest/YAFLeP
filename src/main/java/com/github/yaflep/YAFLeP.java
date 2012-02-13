@@ -3,7 +3,6 @@ package com.github.yaflep;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,20 @@ public class YAFLeP<T> {
 	
 	private final FixedLengthRecord flr; 
 	
-	private final Map<DataField, Field> dataFieldMap;
+	private Map<Class<?>, Field[]> declaredFieldsMap = new HashMap<Class<?>, Field[]>();
+	
+	public Field[] getDeclaredFields(Class<?> clazz) {
+		if (! declaredFieldsMap.containsKey(clazz)) {
+			Field[] declaredFields = clazz.getDeclaredFields();
+			for (Field each: declaredFields) {
+				each.setAccessible(true);
+			}
+			
+			declaredFieldsMap.put(clazz, declaredFields);
+		}
+		
+		return declaredFieldsMap.get(clazz);
+	}
 	
 	private YAFLeP(Class<T> clazz) { 
 		this.clazz = clazz;
@@ -35,47 +47,47 @@ public class YAFLeP<T> {
 		if (flr == null) {
 			throw new IllegalArgumentException("Class must be annotated with @FixedLengthRecord");
 		}
-
-		dataFieldMap = new HashMap<DataField, Field>();
+	}
+	
+	public T unmarshal(String line) 
+	throws InstantiationException, IllegalAccessException, IllegalArgumentException, UnsupportedConversionException {
+		return unmarshal(line, DEFAULT_TYPE_CONVERTER);
+	}
+	
+	public T unmarshal(String line, TypeConverter typeConverter) 
+	throws InstantiationException, IllegalAccessException, IllegalArgumentException, UnsupportedConversionException {
+		return unmarshalObject(clazz, line, typeConverter);
+	}
+	
+	public <O> O unmarshalObject(Class<O> objectClass, String line, TypeConverter typeConverter) 
+	throws InstantiationException, IllegalAccessException, IllegalArgumentException, UnsupportedConversionException {
+		O o = objectClass.newInstance();
 		
-		for (Field each: clazz.getDeclaredFields()) {
-			each.setAccessible(true);
-			
+		for (Field each: getDeclaredFields(objectClass)) {
 			DataField df = each.getAnnotation(DataField.class);
-			if (df != null) {
-				dataFieldMap.put(df, each);
+			
+			if (df == null) {
+				continue;
 			}
-		}
-	}
-	
-	public T unmarshall(String line) 
-	throws InstantiationException, IllegalAccessException, IllegalArgumentException, UnsupportedConversionException {
-		return unmarshall(line, DEFAULT_TYPE_CONVERTER);
-	}
-	
-	public T unmarshall(String line, TypeConverter typeConverter) 
-	throws InstantiationException, IllegalAccessException, IllegalArgumentException, UnsupportedConversionException {
-		T t = clazz.newInstance();
-		
-		for (Entry<DataField, Field> each: dataFieldMap.entrySet()) {
-			int pos = each.getKey().pos();
-			int length = each.getKey().length();
+			
+			int pos = df.pos();
+			int length = df.length();
 			
 			String valueAsString = line.substring(pos-1, pos+length-1);
-			if (each.getKey().trimToNull()) {
+			if (df.trimToNull()) {
 				valueAsString = valueAsString.trim();
 				if (valueAsString.length() == 0) {
 					valueAsString = null;
 				}
 			}
 			
-			each.getValue().set(t, typeConverter.convertTo(
-					each.getValue().getType(), 
+			each.set(o, typeConverter.convertTo(
+					each.getType(), 
 					valueAsString,
-					each.getKey()));
+					df));
 		}
 		
-		return t;
+		return o;
 	}
 	
 	public boolean matches(String line) {
