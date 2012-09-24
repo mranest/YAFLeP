@@ -10,5 +10,6 @@ public @interface DataField {
 	char paddingChar() default ' ';
 	boolean trimToNull() default false;
 	boolean fixed() default false;
+	boolean last() default false;
 	int decimalPoints() default 0;
 }
